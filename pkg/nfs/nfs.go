@@ -19,6 +19,7 @@ package nfs
 import (
 	"github.com/container-storage-interface/spec/lib/go/csi"
 	"github.com/golang/glog"
+	"k8s.io/kubernetes/pkg/util/mount"
 )
 
 type nfsDriver struct {
@@ -70,9 +71,10 @@ func NewNFSdriver(nodeID, endpoint string) *nfsDriver {
 	return n
 }
 
-func NewNodeServer(n *nfsDriver) *nodeServer {
+func NewNodeServer(n *nfsDriver, mounter mount.Interface) *nodeServer {
 	return &nodeServer{
-		Driver: n,
+		Driver:  n,
+		mounter: mounter,
 	}
 }
 
@@ -83,7 +85,7 @@ func (n *nfsDriver) Run() {
 		// NFS plugin has not implemented ControllerServer
 		// using default controllerserver.
 		NewControllerServer(n),
-		NewNodeServer(n))
+		NewNodeServer(n, mount.New("")))
 	s.Wait()
 }
 
