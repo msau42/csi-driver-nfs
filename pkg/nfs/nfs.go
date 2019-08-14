@@ -79,13 +79,15 @@ func NewNodeServer(n *nfsDriver, mounter mount.Interface) *nodeServer {
 }
 
 func (n *nfsDriver) Run() {
+	nodeServer := NewNodeServer(n, mount.New(""))
+	n.ns = nodeServer
 	s := NewNonBlockingGRPCServer()
 	s.Start(n.endpoint,
 		NewDefaultIdentityServer(n),
 		// NFS plugin has not implemented ControllerServer
 		// using default controllerserver.
 		NewControllerServer(n),
-		NewNodeServer(n, mount.New("")))
+		nodeServer)
 	s.Wait()
 }
 
