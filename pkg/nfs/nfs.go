@@ -36,7 +36,8 @@ type nfsDriver struct {
 }
 
 const (
-	driverName = "nfs.csi.k8s.io"
+	driverName       = "nfs.csi.k8s.io"
+	internalMountDir = "/provisioner-working-mounts"
 )
 
 var (
@@ -63,11 +64,8 @@ func NewNFSdriver(nodeID, endpoint string) *nfsDriver {
 	}
 	n.AddVolumeCapabilityAccessModes(vcam)
 
-	// NFS plugin does not support ControllerServiceCapability now.
-	// If support is added, it should set to appropriate
-	// ControllerServiceCapability RPC types.
-	n.AddControllerServiceCapabilities([]csi.ControllerServiceCapability_RPC_Type{csi.ControllerServiceCapability_RPC_UNKNOWN})
-
+	n.AddControllerServiceCapabilities([]csi.ControllerServiceCapability_RPC_Type{
+		csi.ControllerServiceCapability_RPC_CREATE_DELETE_VOLUME})
 	return n
 }
 
@@ -85,7 +83,7 @@ func (n *nfsDriver) Run() {
 		NewDefaultIdentityServer(n),
 		// NFS plugin has not implemented ControllerServer
 		// using default controllerserver.
-		NewControllerServer(n),
+		NewControllerServer(n, internalMountDir),
 		n.ns)
 	s.Wait()
 }

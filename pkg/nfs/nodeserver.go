@@ -58,6 +58,9 @@ func (ns *nodeServer) NodePublishVolume(ctx context.Context, req *csi.NodePublis
 		mo = append(mo, "ro")
 	}
 
+	// TODO: This is needed if rpcbind is not available on the node. What are the consequences?
+	mo = append(mo, "nolock")
+
 	s := req.GetVolumeContext()["server"]
 	ep := req.GetVolumeContext()["share"]
 	source := fmt.Sprintf("%s:%s", s, ep)
